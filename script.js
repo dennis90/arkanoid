@@ -143,7 +143,7 @@ function gameLoop() {
           x: player.position.x - player.size.x / 2,
           y: player.position.y - player.size.y / 2,
           width: player.size.x,
-          heigh: player.size.y,
+          height: player.size.y,
         })
       ) {
         if (ball.speed.y > 0) {
@@ -216,7 +216,7 @@ function gameLoop() {
       if (player.life <= 0) gameOver = true;
     }
   } else {
-    if (KEY_PRESSED === "Enter") {
+    if (KEY_PRESSED === "Enter" || LEFT_MOUSE_BTN_PRESSED) {
       gameOver = false;
       initialize();
       return;
@@ -295,6 +295,19 @@ document.addEventListener("keydown", function (event) {
 
 document.addEventListener("mousemove", function (event) {
   mousePosition = { x: event.clientX, y: event.clientY };
+});
+
+document.addEventListener("touchstart", function (event) {
+  LEFT_MOUSE_BTN_PRESSED = true;
+})
+
+document.addEventListener("touchend", function (event) {
+  LEFT_MOUSE_BTN_PRESSED = false;
+})
+
+document.addEventListener("touchmove", function (event) {
+  mousePosition = { x: event.touches[0].clientX, y: event.touches[0].clientY };
+  LEFT_MOUSE_BTN_PRESSED = false;
 });
 
 document.addEventListener("mousedown", function (event) {
