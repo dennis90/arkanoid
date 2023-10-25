@@ -1,6 +1,3 @@
-let circleY = 0;
-let circleX = 150;
-
 /**
  * @typedef {Object} Vector2
  * @property {number} x
@@ -25,6 +22,7 @@ let circleX = 150;
  *
  * @typedef {Object} Brick
  * @property {Vector2} position
+ * @property {number} color
  * @property {boolean} active
  */
 
@@ -36,9 +34,9 @@ canvas.width = 800;
 canvas.height = 450;
 
 const PLAYER_LIFES = 5;
-const LINES_OF_BRICKS = 3;
+const LINES_OF_BRICKS = 16;
 const BRICKS_PER_LINE = 20;
-const BRICK_MARGIN = 50;
+const BRICK_MARGIN = 25;
 
 // Manage user input
 
@@ -48,7 +46,7 @@ let KEY_PRESSED = null;
 let LEFT_MOUSE_BTN_PRESSED = false;
 
 /** @type {Vector2} */
-const brickSize = { x: canvas.width / BRICKS_PER_LINE, y: 20 };
+const brickSize = { x: 20, y: 20 };
 
 let gameOver = false;
 let pause = false;
@@ -61,6 +59,7 @@ const ball = {};
 
 /** @type {Brick[]} */
 const bricks = [];
+let colorMap = {};
 
 /**
  * @param {Vector2} circlePos
@@ -92,7 +91,7 @@ function checkCollisionCircleRec(circlePos, circleRadius, rect) {
 
 function gameLoop() {
   ctx.reset();
-  ctx.fillStyle = "black";
+  ctx.fillStyle = "#222034";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   ctx.font = "50px sans-serif";
 
@@ -154,8 +153,8 @@ function gameLoop() {
       }
 
       // Collision logic: ball vs bricks
-      for (let y = 0; y < LINES_OF_BRICKS; y++) {
-        for (let x = 0; x < BRICKS_PER_LINE; x++) {
+      for (let y = 0; y < bricks.length; y++) {
+        for (let x = 0; x < bricks[y].length; x++) {
           if (bricks[y][x].active) {
             // Hit below
             if (
@@ -262,10 +261,10 @@ function gameLoop() {
     ctx.fill();
 
     // Draw bricks
-    for (let y = 0; y < LINES_OF_BRICKS; y++) {
-      for (let x = 0; x < BRICKS_PER_LINE; x++) {
+    for (let y = 0; y < bricks.length; y++) {
+      for (let x = 0; x < bricks[y].length; x++) {
         if (bricks[y][x].active) {
-          ctx.fillStyle = (x + y) % 2 == 0 ? "#CD5C5C" : "#F08080";
+          ctx.fillStyle = colorMap[bricks[y][x].color] //(x + y) % 2 == 0 ? "#CD5C5C" : "#F08080";
           ctx.fillRect(
             bricks[y][x].position.x - brickSize.x / 2,
             bricks[y][x].position.y - brickSize.y / 2,
@@ -330,15 +329,19 @@ function initialize() {
 
   while (bricks.length > 0) bricks.pop();
 
-  for (let y = 0; y < LINES_OF_BRICKS; y++) {
+  const {level, colors} = getPokemonLevel();
+  colorMap = colors;
+
+  for (let y = 0; y < level.length; y++) {
     bricks.push([]);
-    for (let x = 0; x < BRICKS_PER_LINE; x++) {
+    for (let x = 0; x < level[y].length; x++) {
       bricks[y].push({
         position: {
           x: x * brickSize.x + brickSize.x / 2,
           y: y * brickSize.y + BRICK_MARGIN,
         },
-        active: true,
+        color: level[y][x],
+        active: level[y][x] >= 0,
       });
     }
   }
@@ -347,3 +350,38 @@ function initialize() {
 }
 
 initialize();
+
+function getPokemonLevel() {
+  const colors = {
+      0: "#fff",
+      1: '#000',
+      2: "#7cba59",
+      3: "#9ae7c3",
+      4: '#4d867f',
+      5: '#4b692f',
+      6: "#e53a4a",
+      7: "#6f2934"
+  }
+
+
+  const level = [
+      [-1,-1,-1,-1,1,1,1,1,-1,-1,-1,-1,-1,-1,-1,-1],
+      [-1,-1,-1,1,2,2,2,2,1,1,-1,-1,-1,-1,-1,-1],
+      [-1,-1,1,2,2,2,2,2,2,2,1,-1,-1,-1,-1,-1],
+      [-1,1,2,2,2,2,2,2,2,2,2,1,1,-1,-1,-1],
+      [-1,1,2,2,2,3,3,3,2,2,3,3,3,1,-1,-1],
+      [1,2,2,2,2,3,3,3,3,3,3,5,3,3,1,-1],
+      [1,2,2,2,3,3,3,4,4,4,3,3,3,3,1,-1],
+      [1,2,2,4,3,0,6,0,4,4,3,0,6,0,3,1],
+      [1,4,4,4,3,0,6,6,3,3,3,0,6,6,3,1],
+      [1,4,4,4,3,0,7,7,3,3,3,0,7,7,3,1],
+      [-1,1,4,4,3,3,3,3,3,3,3,3,3,3,3,1],
+      [-1,1,3,3,4,3,3,3,3,3,3,3,3,3,5,1],
+      [-1,1,3,5,3,4,4,4,4,4,4,4,4,4,1,-1],
+      [-1,1,3,3,3,4,5,5,3,4,4,3,5,3,1,-1],
+      [-1,-1,1,4,4,4,3,3,3,1,4,3,3,3,1,-1],
+      [-1,-1,-1,1,1,1,1,1,1,-1,1,1,1,1,-1,-1],
+  ];
+
+  return {colors, level}
+}
